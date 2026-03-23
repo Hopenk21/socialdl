@@ -53,7 +53,8 @@ async def lifespan(app: FastAPI):
     global _current_version
     _current_version = get_ytdlp_version()
     logger.info(f"[SocialDL] Startup. yt-dlp: {_current_version}")
-    asyncio.create_task(asyncio.get_event_loop().run_in_executor(None, update_ytdlp))
+    loop = asyncio.get_event_loop()
+    loop.run_in_executor(None, update_ytdlp)
     task = asyncio.create_task(scheduled_updater())
     yield
     task.cancel()
