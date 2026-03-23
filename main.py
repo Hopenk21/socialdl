@@ -60,6 +60,7 @@ async def lifespan(app: FastAPI):
 
 # Read allowed origins from env for production CORS
 ALLOWED_ORIGINS = os.environ.get("ALLOWED_ORIGINS", "*").split(",")
+# On HF Spaces, set ALLOWED_ORIGINS to your Netlify frontend URL in Space settings
 
 app = FastAPI(title="SocialDL API", version="1.0.0", lifespan=lifespan)
 app.add_middleware(
