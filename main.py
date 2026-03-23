@@ -73,7 +73,6 @@ app.add_middleware(
 )
 
 SUPPORTED_PLATFORMS = {
-    "youtube.com": "YouTube", "youtu.be": "YouTube",
     "instagram.com": "Instagram", "tiktok.com": "TikTok",
     "twitter.com": "Twitter/X", "x.com": "Twitter/X",
     "facebook.com": "Facebook", "fb.watch": "Facebook",
@@ -82,6 +81,11 @@ SUPPORTED_PLATFORMS = {
     "linkedin.com": "LinkedIn", "dailymotion.com": "Dailymotion",
     "soundcloud.com": "SoundCloud", "bilibili.com": "Bilibili",
 }
+
+BLOCKED_PLATFORMS = {"youtube.com", "youtu.be"}
+
+def is_blocked(url: str) -> bool:
+    return any(domain in url for domain in BLOCKED_PLATFORMS)
 
 def detect_platform(url: str) -> str:
     for domain, name in SUPPORTED_PLATFORMS.items():
@@ -124,6 +128,8 @@ async def list_platforms():
 
 @app.post("/api/info")
 async def get_info(req: InfoRequest):
+    if is_blocked(req.url):
+        raise HTTPException(status_code=400, detail="YouTube is not supported. Please use Instagram, TikTok, Twitter/X, Facebook, Vimeo, SoundCloud, and more.")
     platform = detect_platform(req.url)
     ydl_opts = {"quiet": True, "no_warnings": True, "skip_download": True}
     try:
@@ -182,6 +188,8 @@ async def get_info(req: InfoRequest):
 
 @app.post("/api/download")
 async def download_video(req: DownloadRequest):
+    if is_blocked(req.url):
+        raise HTTPException(status_code=400, detail="YouTube is not supported.")
     tmpdir = tempfile.mkdtemp()
     try:
         if req.audio_only or req.format_id == "bestaudio":
